@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'cryptools'
-  s.version     = '0.0.0'
+  s.version     = '0.1.1'
   s.date        = '2016-09-27'
   s.summary     = "Tools to help with cryptanalysis and expoitation"
   s.description = "Library to help with cryptanalysis and exploitation"
