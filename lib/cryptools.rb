@@ -1,101 +1,83 @@
 require 'base64'
 
-class CryptoolsError < StandardError
-end
+# Custom Error Class
+CryptoolsError = Class.new(StandardError)
 
 module Cryptools
-	module Converters
-		def hex2raw(input)
-			return [input].pack('H*')
-		end
-	
-		def raw2hex(input)
-			return input.unpack('H*').first
-		end	
+  module Converters
+    module_function
 
-		def hex2bytes(input)
-			return hex2raw(input).unpack('C*')
-		end
+    def hex2str(hexStr)
+      [hexStr].pack('H*')
+    end
+  
+    def str2hex(str)
+      str.unpack('H*').first
+    end 
 
-		def bytes2hex(input)
-			return input.map{|x| x.to_s(16) }.join
-		end
-		
-		def str2bytes(str)
-			str.split('').map!{|c| c.ord}
-		end
+    def hex2bytes(hexStr)
+      hex2str(hexStr).unpack('C*')
+    end
 
+    def bytes2hex(bytes)
+      bytes.map{|b| b.to_s(16)}.join
+    end
+    
+    def str2bytes(str)
+      str.split('').map!{|c| c.ord}
+    end
+  end
 
-		module_function :hex2raw
-		module_function :raw2hex
-		module_function :hex2bytes
-		module_function :bytes2hex
-		module_function :str2bytes
-	end
+  module Encoders
+    module_function
 
-	module Encoders
-		def b64_encode(input)
-			return Base64.strict_encode64(input)
-		end
+    def b64_encode(str)
+      Base64.strict_encode64(str)
+    end
 
-		def b64_decode(input)
-			return Bas64.strict_decode64(input)
-		end
-		
-		module_function :b64_encode
-		module_function :b64_decode
-	end
+    def b64_decode(str)
+      Base64.strict_decode64(str)
+    end
+  end
 
-	module BitOperations
-		def xor_bytes(input1, input2)
-			raise CryptoolsError, 'inputs are not the same length.' if input1.length != input2.length	
+  module BitOperations
+    module_function
 
-			return input1.zip(input2).map{|(a, b)| a ^ b}
-		end
-	
-		module_function :xor_bytes
-	end
+    def xor_bytes(bytes1, bytes2)
+      raise CryptoolsError, 'inputs are not the same length.' if bytes1.length != bytes2.length 
 
-	module Cryptanalysis
-		def single_xor_bytes(input, xbyte)
-			len = input.length
-			xbytes = []
+      bytes1.zip(bytes2).map{|(a, b)| a ^ b}
+    end
+  end
 
-			for i in 0..(len - 1) 
-				xbytes.push(xbyte.first)	
-			end	
+  module Cryptanalysis
+    module_function
 
-			return BitOperations.xor_bytes(input, xbytes)
-		end
-		
-		def index_of_coincidence(input)
-			fs = input.each_with_object(Hash.new(0)) { |word,counts| counts[word] += 1 }
-			phiO = 0
-			n = input.length
-			coin_rtext = 0.0385
+    def index_of_coincidence(input)
+      fs = input.each_with_object(Hash.new(0)) { |word,counts| counts[word] += 1 }
+      phiO = 0
+      n = input.length
+      coin_rtext = 0.0385
 
-			fs.each {
-				|key, f|
-				phiO += f * (f - 1)
-			}
+      fs.each {
+        |key, f|
+        phiO += f * (f - 1)
+      }
 
-			phiR = coin_rtext * n * (n - 1) 
-			return phiO / phiR
-		end
+      phiR = coin_rtext * n * (n - 1) 
+      phiO / phiR
+    end
 
-		def english_freq_count(str)
-			str.scan(/[ETAOIN SHRDLU]/i).length
-		end
+    def english_freq_count(str)
+      str.scan(/[ETAOIN SHRDLU]/i).length
+    end
+  end
 
-		module_function :english_freq_count
-		module_function :index_of_coincidence
-		module_function :single_xor_bytes
-	end
-	module Ciphers
-		def single_byte_repeating_xor(ary_bytes, ary_key)
-			ary_bytes.map{|b| b ^ ary_key.first}
-		end
+  module Ciphers
+    module_function
 
-		module_function :single_byte_repeating_xor
-	end
+    def single_byte_repeating_xor(bytes, bytes_k)
+      bytes.map{|b| b ^ bytes_k.first}
+    end
+  end
 end
